@@ -50,6 +50,12 @@ async function iniciar() {
     document.title = STR[lang].titulo;
   }
 
+  // En vista general con pantalla estrecha la cámara se aleja: rótulos más grandes.
+  function escalaRotulos() {
+    const f = !activa && esc.camera.aspect < 0.9 ? 2.4 : 1;
+    for (const isla of esc.islas) isla.rotulo.scale.set(1.5 * f, 0.59 * f, 1);
+  }
+
   function rotulos() {
     for (const isla of esc.islas) {
       const s = sis(isla.k);
@@ -57,9 +63,9 @@ async function iniciar() {
       mat.map?.dispose();
       mat.map = texturaRotulo(s.n, hechos.has(isla.k) ? t().retoHecho : t().estructuras(cuenta(isla.k)), s.c, hechos.has(isla.k));
       mat.needsUpdate = true;
-      isla.rotulo.scale.set(1.5, 0.59, 1);
       (isla.bandera.material as THREE.MeshStandardMaterial).color.set(s.c);
     }
+    escalaRotulos();
   }
 
   function mapa() {
@@ -89,6 +95,10 @@ async function iniciar() {
     $('#btn-sonido').textContent = sonido.activo() ? t().sonidoOn : t().sonidoOff;
     $('#btn-sonido').setAttribute('aria-pressed', String(sonido.activo()));
     $('#btn-idioma').textContent = t().idioma;
+    const plegado = $('#panel-isla').classList.contains('plegado');
+    $('#btn-plegar').textContent = plegado ? '▴' : '▾';
+    $('#btn-plegar').setAttribute('aria-expanded', String(!plegado));
+    $('#btn-plegar').setAttribute('aria-label', plegado ? t().desplegar : t().plegar);
   }
 
   function panelIsla() {
@@ -108,6 +118,7 @@ async function iniciar() {
   function ficha(pz: Pieza | null) {
     fichaPieza = pz;
     const el = $('#ficha');
+    document.body.classList.toggle('con-ficha', !!pz);
     if (!pz) { el.hidden = true; cuerpo.resaltar([]); return; }
     const c = atlas.concepts[pz.parte.c];
     const lado = t().lado[pz.parte.sd] ?? '';
@@ -138,6 +149,7 @@ async function iniciar() {
     activa = k;
     location.hash = k ? `#/isla/${k}` : '#/';
     esc.islas.forEach(i => (i.rotulo.visible = i.k !== k));
+    escalaRotulos();
     mapa();
     panelIsla();
     sonido.cambiar(k ?? 'inicio');
@@ -205,6 +217,7 @@ async function iniciar() {
   $('#btn-ant').addEventListener('click', () => paso(-1));
   $('#btn-sig').addEventListener('click', () => paso(1));
   $('#btn-volver').addEventListener('click', () => irA(null));
+  $('#btn-plegar').addEventListener('click', () => { $('#panel-isla').classList.toggle('plegado'); botonesFijos(); });
   $('#btn-final-cerrar').addEventListener('click', () => ($('#final').hidden = true));
   $('#btn-creditos').addEventListener('click', () => $<HTMLDialogElement>('#creditos').showModal());
   $('#btn-sonido').addEventListener('click', async () => { await sonido.alternar(); botonesFijos(); });
@@ -240,7 +253,7 @@ async function iniciar() {
     }
     ficha(null);
   });
-  addEventListener('resize', () => { esc.redimensionar(); });
+  addEventListener('resize', () => { esc.redimensionar(); viaje.encuadre(!!activa); escalaRotulos(); });
 
   // ---------------------------------------------------------------- arranque
   traducir(); botonesFijos(); rotulos();
@@ -248,7 +261,7 @@ async function iniciar() {
   marco($('#panel-isla'), { seed: 9 });
   marco($('#final-caja'), { seed: 13 });
   $('#ficha').append(Object.assign(document.createElement('div'), { className: 'ficha-cont' }));
-  marco($('#ficha'), { seed: 31 });
+  marco($('#ficha'), { seed: 31, relleno: 'rgba(11,11,11,0.97)' });
   esc.camera.position.set(-14, 16, -10);
   esc.controls.update();
 

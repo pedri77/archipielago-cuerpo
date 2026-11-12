@@ -2,6 +2,7 @@
 import gsap from 'gsap';
 import * as THREE from 'three';
 import { reducirMovimiento } from './datos';
+import { RADIO_ARCHIPIELAGO } from './escena';
 import type { Escena, Isla } from './escena';
 
 export const dur = (s: number) => (reducirMovimiento ? 0 : s);
@@ -33,21 +34,54 @@ export function crearViaje(esc: Escena) {
     });
   }
 
+  // En pantallas estrechas el panel de la isla tapa la parte de abajo: se desplaza
+  // la ventana de la cámara hacia abajo para que el modelo quede en la zona libre.
+  const DESPLAZAMIENTO = 0.2;
+  const estrecho = () => camera.aspect < 0.9;
+  function encuadre(enIsla: boolean) {
+    const w = innerWidth, h = innerHeight;
+    if (enIsla && estrecho()) camera.setViewOffset(w, h, 0, h * DESPLAZAMIENTO, w, h);
+    else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+  }
+
+  // La niebla escala con la distancia de la cámara para no apagar las islas lejanas.
+  function niebla(dist: number) {
+    const f = esc.scene.fog as THREE.Fog;
+    f.near = Math.max(9, dist * 0.75);
+    f.far = Math.max(26, dist * 1.6);
+  }
+
   function vistaGeneral() {
-    const estrecho = camera.aspect < 0.9;
-    const pos = estrecho ? new THREE.Vector3(0, 13.5, 15.5) : new THREE.Vector3(0, 9, 13.5);
+    encuadre(false);
+    if (!estrecho()) {
+      niebla(0);
+      controls.minDistance = 4;
+      controls.maxDistance = 24;
+      return { pos: new THREE.Vector3(0, 9, 13.5), objetivo: new THREE.Vector3(0, 0.4, 0) };
+    }
+    // cabe el anillo entero a lo ancho, mirando casi desde arriba
+    const radio = RADIO_ARCHIPIELAGO + 1.5;
+    const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
+    const dist = (radio / tanH) * 1.05;
+    const dir = new THREE.Vector3(0, 0.9, 0.44).normalize();
+    niebla(dist);
     controls.minDistance = 4;
-    controls.maxDistance = 24;
-    return { pos, objetivo: new THREE.Vector3(0, estrecho ? 0 : 0.4, 0) };
+    controls.maxDistance = dist * 1.2;
+    return { pos: dir.multiplyScalar(dist), objetivo: new THREE.Vector3(0, 0, 0.3) };
   }
 
   function vistaIsla(isla: Isla, caja: THREE.Box3 | null) {
+    encuadre(true);
+    niebla(0);
     const c = new THREE.Vector3();
     const tam = new THREE.Vector3(0.6, 1.7, 0.4);
     if (caja && !caja.isEmpty()) { caja.getCenter(c); caja.getSize(tam); }
     else c.copy(isla.centro).setY(0.9);
     const vfov = THREE.MathUtils.degToRad(camera.fov);
-    const altoVis = Math.max(tam.y, Math.max(tam.x, tam.z) / camera.aspect) * 1.35;
+    // con el encuadre desplazado solo queda libre la parte de arriba de la pantalla
+    const libre = estrecho() ? 1 - DESPLAZAMIENTO * 2 : 1;
+    const altoVis = (Math.max(tam.y, Math.max(tam.x, tam.z) / camera.aspect) * 1.35) / libre;
     const dist = Math.max(0.55, altoVis / 2 / Math.tan(vfov / 2));
     const pos = c.clone().addScaledVector(isla.dir, dist).add(new THREE.Vector3(0, dist * 0.16, 0));
     controls.minDistance = Math.max(0.2, dist * 0.25);
@@ -64,6 +98,6 @@ export function crearViaje(esc: Escena) {
     return volar(v.pos, v.objetivo, 3.2, 0.2);
   }
 
-  return { volar, vistaGeneral, vistaIsla, entrada };
+  return { volar, vistaGeneral, vistaIsla, entrada, encuadre };
 }
 export type Viaje = ReturnType<typeof crearViaje>;

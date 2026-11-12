@@ -84,6 +84,11 @@ h1, h2 { font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 .panel-isla .pista { font: 400 14px var(--mano); color: var(--tiza-suave); }
 .botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
+.plegar {
+  display: none; position: absolute; top: 6px; right: 8px; width: 36px; height: 36px; border: 0; background: none;
+  color: var(--tiza); font-size: 20px; cursor: pointer;
+}
+
 /* Ficha de estructura */
 .ficha {
   position: fixed; right: 16px; top: 70px; z-index: 16; width: min(340px, calc(100vw - 32px));
@@ -141,5 +146,13 @@ h1, h2 { font-weight: 700; letter-spacing: -0.02em; margin: 0; }
   .panel-isla #isla-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .panel-isla .pista { display: none; }
   .ficha { top: auto; bottom: 10px; left: 10px; right: 10px; width: auto; max-height: 45svh; z-index: 17; }
-  .marca { font-size: 16px; }
+  .cabecera { padding: max(10px, env(safe-area-inset-top)) 10px 10px; gap: 8px; align-items: flex-start; }
+  .marca { font-size: 15px; line-height: 1.15; max-width: 9.5em; }
+  .acciones { flex-wrap: nowrap; gap: 6px; }
+  .acciones .boton { font-size: 13px; padding: 3px 8px; white-space: nowrap; }
+  .mapa { width: 90px; top: 58px; }
+  #mapa-svg { width: 90px; height: 90px; }
+  .plegar { display: block; }
+  .panel-isla.plegado #isla-desc, .panel-isla.plegado .botones .boton:not(#btn-reto):not(#btn-volver) { display: none; }
+  body.con-ficha .panel-isla { visibility: hidden; }
 }
