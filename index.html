@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Archipiélago del cuerpo</title>
+    <meta name="description" content="Once islas, once sistemas: un viaje 3D por el cuerpo humano con 934 estructuras anatómicas, retos con física y banda sonora propia. Uso educativo." />
+    <meta name="author" content="David Moya García" />
+    <meta name="theme-color" content="#0b0b0b" />
+    <meta property="og:title" content="Archipiélago del cuerpo" />
+    <meta property="og:description" content="Once islas, once sistemas: viaja por el cuerpo humano en 3D." />
+    <meta property="og:image" content="https://pedri77.github.io/archipielago-cuerpo/og-image.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0b0b'/%3E%3Cg fill='none' stroke='%23f2ece1' stroke-width='1.6'%3E%3Ccircle cx='16' cy='16' r='4'/%3E%3Ccircle cx='16' cy='5' r='2.2'/%3E%3Ccircle cx='26' cy='12' r='2.2'/%3E%3Ccircle cx='23' cy='25' r='2.2'/%3E%3Ccircle cx='9' cy='25' r='2.2'/%3E%3Ccircle cx='6' cy='12' r='2.2'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='2' fill='%23ef4444'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div id="escena" aria-hidden="true"></div>
+
+    <header class="cabecera">
+      <span class="marca" data-t="titulo">Archipiélago del cuerpo</span>
+      <span class="progreso" id="progreso" aria-live="polite"></span>
+      <nav class="acciones">
+        <button class="boton" id="btn-sonido" type="button" aria-pressed="false"></button>
+        <button class="boton" id="btn-idioma" type="button"></button>
+        <button class="boton" id="btn-creditos" type="button" data-t="creditos"></button>
+      </nav>
+    </header>
+
+    <section id="portada" class="portada">
+      <div class="portada-caja" id="portada-caja">
+        <p class="antetitulo">anatomía · 934 estructuras</p>
+        <h1 data-t="titulo"></h1>
+        <p class="entradilla" data-t="lema"></p>
+        <div class="carga" id="carga" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="carga-barra"><i id="carga-barra"></i></span>
+          <span id="carga-texto" data-t="cargando"></span>
+        </div>
+        <button class="boton grande" id="btn-zarpar" type="button" data-t="empezar" disabled></button>
+        <p class="aviso" data-t="aviso"></p>
+      </div>
+    </section>
+
+    <aside class="mapa" id="mapa" hidden>
+      <svg id="mapa-svg" role="img" aria-label="Mapa del archipiélago"></svg>
+      <ul class="islas-nav" id="islas-nav"></ul>
+    </aside>
+
+    <section class="panel-isla" id="panel-isla" hidden aria-live="polite">
+      <p class="antetitulo" id="isla-num"></p>
+      <h2 id="isla-nombre"></h2>
+      <p id="isla-desc"></p>
+      <p class="pista" data-t="pistaExplorar"></p>
+      <div class="botones">
+        <button class="boton rojo" id="btn-reto" type="button"></button>
+        <button class="boton" id="btn-ant" type="button" data-t="anterior"></button>
+        <button class="boton" id="btn-sig" type="button" data-t="siguiente"></button>
+        <button class="boton" id="btn-volver" type="button" data-t="volver"></button>
+      </div>
+    </section>
+
+    <aside class="ficha" id="ficha" hidden aria-live="polite"></aside>
+
+    <section class="final" id="final" hidden>
+      <div class="final-caja" id="final-caja">
+        <h2 data-t="final"></h2>
+        <p data-t="finalTexto"></p>
+        <p class="cta" id="cta" hidden></p>
+        <button class="boton" id="btn-final-cerrar" type="button" data-t="cerrar"></button>
+      </div>
+    </section>
+
+    <div class="reto" id="reto" hidden></div>
+
+    <dialog class="creditos" id="creditos">
+      <div class="creditos-caja">
+        <h2 data-t="creditos"></h2>
+        <p>Modelo 3D y fichas: <a href="https://github.com/niuxito/human-body" rel="noopener">«Anatomía en capas»</a> de Alexis Parrón (2026), código MIT y contenido <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" rel="noopener">CC BY-SA 4.0</a>.</p>
+        <p>Mallas derivadas de <a href="https://lifesciencedb.jp/bp3d/" rel="noopener">BodyParts3D</a> © The Database Center for Life Science (DBCLS), <a href="https://creativecommons.org/licenses/by-sa/2.1/jp/" rel="noopener">CC BY-SA 2.1 JP</a>. Cambios en esta web: mallas convertidas a GLB por sistema, miniaturas del reto y montaje por islas.</p>
+        <p>Música generada con <a href="https://github.com/multimodal-art-projection/YuE" rel="noopener">YuE</a> (M-A-P / HKUST).</p>
+        <p>Hecho con <a href="https://threejs.org" rel="noopener">three.js</a>, <a href="https://gsap.com" rel="noopener">GSAP</a>, <a href="https://brm.io/matter-js/" rel="noopener">Matter.js</a> y <a href="https://roughjs.com" rel="noopener">Rough.js</a>; compresión <a href="https://github.com/zeux/meshoptimizer" rel="noopener">meshoptimizer</a>.</p>
+        <p>Este contenido (mallas, fichas y derivados) se comparte con la misma licencia CC BY-SA 4.0. El código de la web es MIT. <a href="https://github.com/pedri77/archipielago-cuerpo" rel="noopener">Código fuente</a>.</p>
+        <p class="aviso" data-t="aviso"></p>
+        <form method="dialog"><button class="boton" data-t="cerrar"></button></form>
+      </div>
+    </dialog>
+
+    <p class="sin-webgl" id="sin-webgl" hidden data-t="errorWebgl"></p>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
